@@ -25,9 +25,11 @@ def Check_Comx():
 
     if len (plist) <= 0:
         print("Not Found Comx!!!")
-        return 0
     else:
+        for i in range(0,len(plist)):
+            print(plist[i])
         plist_0 = list (plist[0])
+        port_list = list(serial.tools.list_ports.comports())
         serialName = plist_0[0]
         serialFd = serial.Serial (serialName, 9600, timeout=60)
         print("Comx:  >>>", serialFd.name)
