@@ -13,24 +13,28 @@ else:import thread
 import matplotlib.pyplot as plt
 from tkinter import *
 from serial import *
-
+from tkinter.ttk import *
 import serial.tools.list_ports
 import time
 
 
 
 data_list = []
+comboxlist=[]
+serial_plist=[]
+COM_X=[]
 def Check_Comx():
+    global serial_plist
     plist = list (serial.tools.list_ports.comports ())
-
+    serial_plist=plist
     if len (plist) <= 0:
         print("Not Found Comx!!!")
     else:
         for i in range(0,len(plist)):
             print(plist[i])
         plist_0 = list (plist[0])
-        port_list = list(serial.tools.list_ports.comports())
         serialName = plist_0[0]
+        print("serialName ",serialName)
         serialFd = serial.Serial (serialName, 9600, timeout=60)
         print("Comx:  >>>", serialFd.name)
         return serialFd.name
@@ -60,7 +64,15 @@ class MSerialPort:
         self.message = data
         return self.message
         # data_list.append (mSerial.message)
-
+        
+def go(*args):   #处理事件，*args表示可变参数
+    global COM_X;
+    com=comboxlist.get()
+    Com_x=com.split(" ")
+    COM_X=Com_x
+    serialFd = serial.Serial (Com_x[0], 115200, timeout=60)
+    print("Comx:  >>>", serialFd.name)
+    
 class GUI (Frame):
     def __init__(self, master, **kw):
 
@@ -69,7 +81,7 @@ class GUI (Frame):
         frame.pack ()
         # 串口设置相关变量
         self.port = Check_Comx ()
-        self.baudrate = 9600
+        self.baudrate = 115200
         # 输出框提示
         self.lab3 = Label (frame, text='Message Show')
         self.lab3.grid (row=0, column=1, sticky=W)
@@ -110,6 +122,13 @@ class GUI (Frame):
         filemenu.add_command (label='Exit', command=master.quit)
         master.config (menu=menubar)
 
+        #添加一个下拉列表
+        global comboxlist
+        comboxlist=Combobox(frame,textvariable="Choose Serial....") #初始化
+        comboxlist["values"]=serial_plist 
+        comboxlist.current(0)  #选择第一个  
+        comboxlist.bind("<<ComboboxSelected>>",go)  #绑定事件,(下拉列表框被选中时，绑定go()函数)
+        comboxlist.grid (row=1, column=0, sticky=W)
 
 
         #串口初始化
@@ -138,10 +157,11 @@ class GUI (Frame):
             thread.exit ()  # 关闭线程；
 
     def Display_image(self):
-        COM_X = Check_Comx ()
-        mSerial = MSerialPort (COM_X, 9600)
+        #COM_X = Check_Comx ()
+        global COM_X;
+        mSerial = MSerialPort (COM_X[0], 115200)
         thread.start_new_thread (mSerial.read_data, ())  # 调用thread模块中的start_new_thread()函数来产生新线程
-        Y_lim = raw_input ('enter Y_lim: ')
+        Y_lim = input ('enter Y_lim: ')
         while True:
             i = 0
             time.sleep (1 / 30)
